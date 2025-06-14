@@ -33,3 +33,6 @@ class Settings:
     MAIL_FROM_NAME: str = os.getenv("MAIL_FROM_NAME") or "OmniMed"
 
 settings = Settings()
+
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
+print(f"MAIL_FROM from env: {os.getenv('MAIL_FROM')}")
