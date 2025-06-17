@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from itsdangerous import URLSafeTimedSerializer
 from dotenv import load_dotenv
 import os
+from fastapi.security import OAuth2PasswordBearer
+
 
 load_dotenv()
 

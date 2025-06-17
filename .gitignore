@@ -1,0 +1,32 @@
+# Environnement Python
+__pycache__/
+*.py[cod]
+*.env
+*.sqlite3
+*.db
+
+# Virtualenv
+.venv/
+env/
+venv/
+
+# Configuration locale
+.idea/
+.vscode/
+*.log
+*.bak
+*.swp
+.DS_Store
+
+# Fichiers secrets
+.env
+*.secret
+*.key
+*.pem
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+tests/__pycache__/
+

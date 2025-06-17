@@ -31,8 +31,7 @@ class Settings:
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False
     MAIL_FROM_NAME: str = os.getenv("MAIL_FROM_NAME") or "OmniMed"
+    OMNIMED_FUNCTION_URL: str
+
 
 settings = Settings()
-
-load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
-print(f"MAIL_FROM from env: {os.getenv('MAIL_FROM')}")

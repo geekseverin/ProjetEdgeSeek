@@ -26,6 +26,3 @@ async def send_email(subject: str, recipients: List[EmailStr], body: str):
     )
     fm = FastMail(conf)
     await fm.send_message(message)
-
-# Ajout du print pour débogage (optionnel, à retirer après confirmation)
-print(f"MAIL_FROM in mail_utils: {settings.MAIL_FROM}, type: {type(settings.MAIL_FROM)}")

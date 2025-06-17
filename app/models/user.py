@@ -1,10 +1,9 @@
 # app/models/user.py
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
-from sqlalchemy.orm import declarative_base
+from app.core.db import Base
 import enum
 import datetime
 
-Base = declarative_base()
 
 class UserRole(enum.Enum):
     patient = "patient"

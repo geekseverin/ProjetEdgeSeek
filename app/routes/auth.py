@@ -8,9 +8,8 @@ from datetime import timedelta, datetime
 from app.models.password_reset import PasswordResetToken
 from uuid import uuid4
 import smtplib  # (exemple, à remplacer par ton système mail)
-from app.services.email_service import send_verification_email
+from app.services.email_service import send_verification_email, send_password_reset_email
 from app.utils.mail_utils import send_email
-from pydantic import BaseModel, EmailStr
 
 
 app = FastAPI()
@@ -25,7 +24,7 @@ def get_db():
         db.close()
 
 @router.post("/register", response_model=UserRead)
-def register(user: UserCreate, db: Session = Depends(get_db)):
+async def register(user: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email déjà enregistré")
@@ -38,13 +37,21 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         hashed_password=hashed_pw,
         role=user.role,
         is_active=True,
-        is_verified=True  # à adapter si tu veux une vérification email
+        is_verified=False  # on attend vérification
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     token = generate_email_token(db_user.email)
-    send_verification_email(db_user.email, token)
+    # url = "http://localhost:8000/api/verify-email?token=fake-token"
+    # html = f"""
+    #     <h2>Test mail de vérification</h2>
+    #     <p>Voici votre lien : <a href="{url}">{url}</a></p>
+    # """
+    # await send_email("Vérification testée", ["donaldtitembaye@gmail.com"], html)
+
+    await send_verification_email(db_user.email, token)
+
     return db_user
 
 
@@ -62,26 +69,18 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
 
 @router.post("/password-reset-request", summary="Demander une réinitialisation")
-def request_reset_password(payload: PasswordResetRequest, db: Session = Depends(get_db)):
-    # On récupère l'utilisateur depuis l'email fourni
+async def request_reset_password(payload: PasswordResetRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
-    
     if not user:
-        # Si l'utilisateur n'existe pas, on retourne une erreur 404
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
 
-    # On génère un token unique aléatoire (UUID)
     token = str(uuid4())
-
-    # On crée un objet PasswordResetToken et on l’enregistre en base
     reset_token = PasswordResetToken(email=payload.email, token=token)
     db.add(reset_token)
     db.commit()
 
-    # on simule l'envoie d'email avec un print
-    print(f"Réinitialisation : http://localhost:8000/auth/password-reset-confirm?token={token}")
+    await send_password_reset_email(user.email, token)
 
-    # On retourne un message de confirmation
     return {"message": "Lien de réinitialisation envoyé par e-mail"}
 
 
@@ -129,19 +128,3 @@ def verify_email(token: str, db: Session = Depends(get_db)):
     user.is_verified = True
     db.commit()
     return {"message": "Email vérifié avec succès."}
-
-
-class EmailSchema(BaseModel):
-    email: EmailStr
-    subject: str
-    body: str
-
-
-@router.post("/test-email")
-def test_email(payload: EmailSchema):
-    send_email(
-        subject=payload.subject,
-        recipients=[payload.email],
-        body=payload.body
-    )
-    return {"message": "Email envoyé avec succès"}
